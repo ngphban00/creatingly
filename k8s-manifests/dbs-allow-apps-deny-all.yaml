@@ -1,0 +1,17 @@
+# dbs-allow-apps-deny-all.yaml
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: dbs-allow-apps-deny-all
+  namespace: dbs
+spec:
+  podSelector: {}  # This applies to all pods in the dbs namespace
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow traffic from nmespace apps
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: apps
