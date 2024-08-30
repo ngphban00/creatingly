@@ -1,4 +1,5 @@
-# apps-network-policy.yaml
+# Allow external access 
+# Deny access from other namespaces 
 
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

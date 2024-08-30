@@ -1,4 +1,5 @@
-# dbs-allow-apps-deny-all.yaml
+# Allow access only from apps namespace
+# Deny other access 
 
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
