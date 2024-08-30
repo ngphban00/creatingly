@@ -31,13 +31,12 @@ cd creatingly
 
 Create VM nodes...
 ```sh
-cd scripts/k8s-setup
+cd lab-setup
 vagrant up
 ```
 
 Deploy Ansible playbooks
 ```sh
-cd scripts/k8s-setup
 ansible-playbook -i inventory/vagrant.hosts playbooks/ansible-playbook.yaml
 ```
 
@@ -61,13 +60,26 @@ worker-02   Ready    <none>          72m   v1.30.4
 
 Then copy the output of the kubeconfig on the master node
 ```sh
-cat ~/.kube/config
+vagrant ssh master -c 'cat ~/.kube/config'
 ```
 
-Overwrite the original __.kubeconfig__ file in the root of this repo with the copied content in previous step
+Overwrite the original __.kubeconfig__ file in the root of this repo with the output copied in previous step
 
 Now check kube access from your local machine
 ```sh
-export KUBECONFIG=.kubeconfig
+export KUBECONFIG=.~/creatingly/.kubeconfig
 kubectl get nodes
 ```
+
+## Accomplishment
+
+Below are what we can achieve in the lab. Follow README in each link in the table
+
+| Task | README |
+| ------ | ------ |
+| Network Policies  | [network-policies/README.md][PlDb] |
+| Service Account  | [service-account/README.md][PlGh] |
+| Metrics Collection  | [metrics/README.md][PlGd] |
+| Dashboard Creation/Access | [dashboard/README.md][PlOd] |
+| Report | [report/README.md][PlMe] |
+| Email Alert | [email-alert/README.md][PlGa] |
