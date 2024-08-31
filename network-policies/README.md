@@ -299,3 +299,11 @@ nc: mysql.dbs (172.16.37.210:3306): Operation timed out
 sent 0, rcvd 0
 / # 
 ```
+
+## Clean up
+```sh
+kubectl -n apps delete svc web public-web-access
+kubectl -n apps delete pod web
+kubectl -n dbs delete -f https://k8s.io/examples/application/mysql/mysql-deployment.yaml
+kubectl -n dbs delete -f https://k8s.io/examples/application/mysql/mysql-pv.yaml
+```
