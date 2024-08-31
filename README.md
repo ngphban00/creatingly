@@ -40,22 +40,30 @@ Deploy Ansible playbooks
 ansible-playbook -i inventory/vagrant.hosts playbooks/ansible-playbook.yaml
 ```
 
-Wait until the deployment finishes. Then login to the master node
+Wait until the deployment finishes. 
 ```sh
-vagrant ssh master
+Current machine states:
+
+master                    running (virtualbox)
+worker-01                 running (virtualbox)
+worker-02                 running (virtualbox)
+worker-03                 running (virtualbox)
 ```
 
-Check Kubernetes node status
+Then check Kubernetes node status
 ```sh
-kubectl get nodes
+vagrant ssh master -c 'kubectl get nodes'
 ```
+
+```sh
 
 You should wait for a while before all nodes come to Ready status
 ```sh
-NAME        STATUS   ROLES           AGE   VERSION
-master      Ready    control-plane   72m   v1.30.4
-worker-01   Ready    <none>          72m   v1.30.4
-worker-02   Ready    <none>          72m   v1.30.4
+NAME        STATUS   ROLES           AGE     VERSION
+master      Ready    control-plane   3m56s   v1.30.4
+worker-01   Ready    <none>          3m35s   v1.30.4
+worker-02   Ready    <none>          3m35s   v1.30.4
+worker-03   Ready    <none>          3m35s   v1.30.4
 ```
 
 Then copy the output of the kubeconfig on the master node
@@ -69,6 +77,19 @@ Now check kube access from your local machine
 ```sh
 export KUBECONFIG=.~/creatingly/.kubeconfig
 kubectl get nodes
+```
+### Install Ceph
+We will need it to manage persistent volumes/claims across subsequent chat installations.
+
+Add those repos
+```sh
+helm repo add rook-release https://charts.rook.io/release
+helm repo add rook-release https://charts.rook.io/release
+```
+then install
+```sh
+helm install --create-namespace --namespace rook-ceph rook-ceph rook-release/rook-ceph
+helm install --create-namespace --namespace rook-ceph rook-ceph-cluster --set operatorNamespace=rook-ceph rook-release/rook-ceph-cluster 
 ```
 
 ## Accomplishment
