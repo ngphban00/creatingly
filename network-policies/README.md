@@ -7,190 +7,68 @@ In this section, we will do the following:
 -- Allow pods in the __dbs__ namespace to be accessed only by pods in the __apps__ namespace.
 
 ## Pre-requisites
+### Calico
 Make sure the lab setup has Calico configued
 
 ```sh
-$ kubectl get all -n calico-system 
-NAME                                           READY   STATUS    RESTARTS   AGE
-pod/calico-kube-controllers-56db68586b-n69kq   1/1     Running   0          6h1m
-pod/calico-node-68nnl                          1/1     Running   0          6h1m
-pod/calico-node-vvgvp                          1/1     Running   0          6h1m
-pod/calico-node-zjw4x                          1/1     Running   0          6h1m
-pod/calico-typha-659dbf8f89-6d9p6              1/1     Running   0          6h1m
-pod/calico-typha-659dbf8f89-hf86z              1/1     Running   0          6h1m
-pod/csi-node-driver-qcx88                      2/2     Running   0          6h1m
-pod/csi-node-driver-sbcrn                      2/2     Running   0          6h1m
-pod/csi-node-driver-tcvzk                      2/2     Running   0          6h1m
+ kubectl get all -n calico-system 
+NAME                                          READY   STATUS    RESTARTS   AGE
+pod/calico-kube-controllers-bb647c4f4-d4hb5   1/1     Running   0          24m
+pod/calico-node-4zmp7                         1/1     Running   0          24m
+pod/calico-node-gqnj2                         1/1     Running   0          24m
+pod/calico-node-l8zpz                         1/1     Running   0          24m
+pod/calico-node-n6smm                         1/1     Running   0          24m
+pod/calico-typha-5b484996d7-767n6             1/1     Running   0          24m
+pod/calico-typha-5b484996d7-bztv5             1/1     Running   0          24m
+pod/csi-node-driver-6qstd                     2/2     Running   0          24m
+pod/csi-node-driver-k6w94                     2/2     Running   0          24m
+pod/csi-node-driver-tcrvg                     2/2     Running   0          24m
+pod/csi-node-driver-xz6dr                     2/2     Running   0          24m
 
-NAME                                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-service/calico-kube-controllers-metrics   ClusterIP   None             <none>        9094/TCP   6h
-service/calico-typha                      ClusterIP   10.105.216.184   <none>        5473/TCP   6h1m
+NAME                                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+service/calico-kube-controllers-metrics   ClusterIP   None           <none>        9094/TCP   22m
+service/calico-typha                      ClusterIP   10.108.72.55   <none>        5473/TCP   24m
 
 NAME                             DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
-daemonset.apps/calico-node       3         3         3       3            3           kubernetes.io/os=linux   6h1m
-daemonset.apps/csi-node-driver   3         3         3       3            3           kubernetes.io/os=linux   6h1m
+daemonset.apps/calico-node       4         4         4       4            4           kubernetes.io/os=linux   24m
+daemonset.apps/csi-node-driver   4         4         4       4            4           kubernetes.io/os=linux   24m
 
 NAME                                      READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/calico-kube-controllers   1/1     1            1           6h1m
-deployment.apps/calico-typha              2/2     2            2           6h1m
+deployment.apps/calico-kube-controllers   1/1     1            1           24m
+deployment.apps/calico-typha              2/2     2            2           24m
 
-NAME                                                 DESIRED   CURRENT   READY   AGE
-replicaset.apps/calico-kube-controllers-56db68586b   1         1         1       6h1m
-replicaset.apps/calico-typha-659dbf8f89              2         2         2       6h1m
+NAME                                                DESIRED   CURRENT   READY   AGE
+replicaset.apps/calico-kube-controllers-bb647c4f4   1         1         1       24m
+replicaset.apps/calico-typha-5b484996d7             2         2         2       24m
 ```
 
 ```sh
 $ kubectl get all -n calico-apiserver 
-NAME                                   READY   STATUS    RESTARTS   AGE
-pod/calico-apiserver-884f5986f-dfl5p   1/1     Running   0          6h
-pod/calico-apiserver-884f5986f-lhz5q   1/1     Running   0          6h
+NAME                                    READY   STATUS    RESTARTS   AGE
+pod/calico-apiserver-69fb48d7b8-8l7h7   1/1     Running   0          22m
+pod/calico-apiserver-69fb48d7b8-q44rh   1/1     Running   0          22m
 
 NAME                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
-service/calico-api   ClusterIP   10.103.78.30   <none>        443/TCP   6h
+service/calico-api   ClusterIP   10.110.97.19   <none>        443/TCP   22m
 
 NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/calico-apiserver   2/2     2            2           6h
+deployment.apps/calico-apiserver   2/2     2            2           22m
 
-NAME                                         DESIRED   CURRENT   READY   AGE
-replicaset.apps/calico-apiserver-884f5986f   2         2         2       6h
-
+NAME                                          DESIRED   CURRENT   READY   AGE
+replicaset.apps/calico-apiserver-69fb48d7b8   2         2         2       22m
 ```
-
-## Create namespaces
-
-Go over __network-policies__ folder
-```sh
-cd network-policies
-```
-
-Create __apps__ namespace first
-
-```sh
-kubectl create ns apps
-```
-```sh
-$ kubectl describe ns apps 
-Name:         apps
-Labels:       kubernetes.io/metadata.name=apps
-Annotations:  <none>
-Status:       Active
-
-No resource quota.
-
-No LimitRange resource.
-
-```
-
-and create __dbs__ namespace
-
-```sh
-kubectl create ns apps
-```
-```sh
-$ kubectl describe ns dbs
-Name:         dbs
-Labels:       kubernetes.io/metadata.name=dbs
-Annotations:  <none>
-Status:       Active
-
-No resource quota.
-
-No LimitRange resource.
-
-```
-## Network policies for apps namespace
-### Deploy
-Check out the policies for __apps__ namespace
-```sh
-# Allow external access 
-# Deny access from other namespaces 
-
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-external-deny-internal
-  namespace: apps
-spec:
-  podSelector: {}  # This applies to all pods in the apps namespace
-  policyTypes:
-  - Ingress
-  ingress:
-  # Allow traffic from external IPs (Internet)
-  - from:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-        except: [192.168.171.0/24]
-```
-With this policy, all pods in __apps__ namespace will accept incoming traffic from any IPs, except IPs from internal namespaces
-
-Apply it
-```sh
-kubectl apply -f apps-allow-external-deny-internal.yaml 
-```
-```sh
-$ kubectl -n apps describe networkpolicies allow-external-deny-internal 
-Name:         allow-external-deny-internal
-Namespace:    apps
-Created on:   2024-08-30 14:00:03 +0700 +07
-Labels:       <none>
-Annotations:  <none>
-Spec:
-  PodSelector:     <none> (Allowing the specific traffic to all pods in this namespace)
-  Allowing ingress traffic:
-    To Port: <any> (traffic allowed to all ports)
-    From:
-      IPBlock:
-        CIDR: 0.0.0.0/0
-        Except: 192.168.171.0/24
-  Not affecting egress traffic
-  Policy Types: Ingress
-```
-Note a few things about this network policies template:
-- If we allow all external (public) access, we have to specify CIDR as 0.0.0.0/0.
-- To deny access from internal namespaces, we have to exclude the pods' IP range (192.168.171.0/24 in our case)
-
-### Use case
-We will create a web service in __apps_ namespace, then test access to it from another namespace or from outside the cluster.
-Do this
-```sh
-$ kubectl run web --namespace=apps --image=nginx --expose --port=80
-service/web created
-pod/web created
-```
-#### Test from a pod in another namespace
-Do this
-```sh
-$ kubectl run test-$RANDOM --namespace=dbs --rm -i -t --image=alpine -- sh
-If you don't see a command prompt, try pressing enter.
-/ # ip a show
-1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1000
-    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-    inet 127.0.0.1/8 scope host lo
-       valid_lft forever preferred_lft forever
-    inet6 ::1/128 scope host 
-       valid_lft forever preferred_lft forever
-2: eth0@if31: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1450 qdisc noqueue state UP qlen 1000
-    link/ether b2:db:e2:4a:dc:96 brd ff:ff:ff:ff:ff:ff
-    inet 192.168.171.25/32 scope global eth0
-       valid_lft forever preferred_lft forever
-    inet6 fe80::b0db:e2ff:fe4a:dc96/64 scope link 
-       valid_lft forever preferred_lft forever
-/ # wget -qO- --timeout=3 http://web.apps
-wget: download timed out
-/ # 
-```
-#### Test from outside the cluster
-We would need a Load Balancer to expose the service first. So let's create MetalLB
+### MetalLB
+We would also need a Load Balancer to publicly expose a service. So let's create MetalLB
 Install the MetalLB Helm chart
 ```sh
 helm repo add metallb https://metallb.github.io/metallb
 helm repo update
-helm install -n metallb-system metallb metallb/metallb
+helm install -n metallb-system metallb metallb/metallb --create-namespace
 ```
 
 Then we will create the IP address pool that will be advertised by the MetalLB controller
 ```sh
-kubectl apply -f ip_address_pool.yaml
+kubectl apply -f ip-address-pool.yaml
 ```
 
 Checkout the IP pool
@@ -200,6 +78,60 @@ NAME          AUTO ASSIGN   AVOID BUGGY IPS   ADDRESSES
 public-pool   true          false             ["192.168.58.100-192.168.58.110"]
 ```
 
+## Create namespaces
+
+Create __apps__ and __dbs__ namespaces first
+
+```sh
+kubectl create ns apps
+kubectl create ns dbs
+```
+
+Go over __network-policies__ folder
+```sh
+cd network-policies
+```
+
+## Network policies for apps namespace
+### Deploy
+```sh
+kubectl apply -f allow-external-access-deny-other-namespaces.yaml
+```
+```sh
+$ kubectl -n apps describe networkpolicies allow-external-access-deny-other-namespaces
+Name:         allow-external-access-deny-other-namespaces
+Namespace:    apps
+Created on:   2024-08-31 14:50:22 +0700 +07
+Labels:       <none>
+Annotations:  <none>
+Spec:
+  PodSelector:     <none> (Allowing the specific traffic to all pods in this namespace)
+  Allowing ingress traffic:
+    To Port: <any> (traffic allowed to all ports)
+    From:
+      IPBlock:
+        CIDR: 0.0.0.0/0
+        Except: 172.16.0.0/16
+  Not affecting egress traffic
+  Policy Types: Ingress
+```
+Note the Pod's IP blocks are 172.16.0.0/16
+
+### Testing 
+We will create a web service in __apps_ namespace, then test access to it from another namespace or from outside the cluster.
+Do this
+```sh
+kubectl run web --namespace=apps --image=nginx --expose --port=80
+```
+#### Test from a pod in another namespace
+```sh
+$ kubectl run test-$RANDOM --namespace=dbs --rm -i -t --image=alpine -- sh
+If you don't see a command prompt, try pressing enter.
+/ # wget -qO- --timeout=3 http://web.apps
+wget: download timed out
+/ # 
+```
+#### Test from outside the cluster
 Now expose the nginx service (in namespace __apps__) publicly
 ```sh
 kubectl -n apps expose service web --name public-web-access --type LoadBalancer
@@ -208,9 +140,9 @@ kubectl -n apps expose service web --name public-web-access --type LoadBalancer
 Now test from your local PC
 ```sh
 $ kubectl get svc -n apps
-NAME                TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)        AGE
-public-web-access   LoadBalancer   10.107.93.216    192.168.58.100   80:32393/TCP   15s
-web                 ClusterIP      10.105.211.110   <none>           80/TCP         29m
+NAME                TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)        AGE
+public-web-access   LoadBalancer   10.96.161.150   192.168.58.100   80:31938/TCP   64m
+web                 ClusterIP      10.99.185.230   <none>           80/TCP         142m
 ```
 ```sh
 $ curl http://192.168.58.100
@@ -300,10 +232,10 @@ Apply it
 kubectl apply -f dbs-allow-apps-deny-all.yaml
 ```
 ```sh
- kubectl -n dbs describe networkpolicies dbs-allow-apps-deny-all 
+$ kubectl -n dbs describe networkpolicies dbs-allow-apps-deny-all
 Name:         dbs-allow-apps-deny-all
 Namespace:    dbs
-Created on:   2024-08-30 16:20:06 +0700 +07
+Created on:   2024-08-31 15:00:48 +0700 +07
 Labels:       <none>
 Annotations:  <none>
 Spec:
@@ -316,7 +248,7 @@ Spec:
   Policy Types: Ingress
 ```
 
-### Use case
+### Testing
 We will deploy a MySQL server in __dbs__ namespace, then try to access from __apps__ namespce or another namespace
 To deploy MySQL server on __dbs__ namespace, do this
 ```sh
@@ -329,18 +261,17 @@ deployment.apps/mysql created
 ```
 
 ```sh
-$ kubectl get all -n dbs
 NAME                         READY   STATUS    RESTARTS   AGE
-pod/mysql-6666d46f58-5bdfp   1/1     Running   0          6s
+pod/mysql-6666d46f58-r8k5q   1/1     Running   0          33s
 
 NAME            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
-service/mysql   ClusterIP   None         <none>        3306/TCP   6s
+service/mysql   ClusterIP   None         <none>        3306/TCP   33s
 
 NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/mysql   1/1     1            1           6s
+deployment.apps/mysql   1/1     1            1           33s
 
 NAME                               DESIRED   CURRENT   READY   AGE
-replicaset.apps/mysql-6666d46f58   1         1         1       6s
+replicaset.apps/mysql-6666d46f58   1         1         1       33s
 ```
 
 Now test from __apps__ namespace
@@ -348,13 +279,13 @@ Now test from __apps__ namespace
 $ kubectl run test-$RANDOM --namespace=apps --rm -i -t --image=alpine -- sh
 If you don't see a command prompt, try pressing enter.
 / # nc -vv mysql.dbs 3306
-mysql.dbs (192.168.171.27:3306) open
+mysql.dbs (172.16.37.210:3306) open
 J
-5.6.51P,,6j7oM��rv{'J"hgK"cQmysql_native_password
+5.6.51B}q?'BWl▒>0suqW?rD<@kmysql_native_password
 ^Csent 1, rcvd 78
 punt!
 
-/ # 
+/ #
 ```
 
 Test from another namespace
@@ -364,7 +295,7 @@ If you don't see a command prompt, try pressing enter.
 / # nc -vv mysql.dbs 3306
 
 
-nc: mysql.dbs (192.168.171.27:3306): Operation timed out
+nc: mysql.dbs (172.16.37.210:3306): Operation timed out
 sent 0, rcvd 0
 / # 
 ```
