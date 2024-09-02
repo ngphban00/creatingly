@@ -9,7 +9,8 @@ spec:
   podSelector: {}
   ingress:
   - from:
+    - podSelector: {}
     - ipBlock:
         cidr: 0.0.0.0/0 
         except:
-        - 172.16.0.0/16
+        - 192.168.0.0/16
