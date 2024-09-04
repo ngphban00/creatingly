@@ -1,0 +1,7 @@
+root=postmaster
+hostname=22I5DELL846.
+mailhub=${SMTP_SERVER}:${SMTP_PORT}
+AuthUser=${SMTP_USER}
+AuthPass=${SMTP_PASS}
+UseTLS=YES
+UseSTARTTLS=YES

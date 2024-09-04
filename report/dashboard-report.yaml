@@ -1,0 +1,38 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pdf-and-email-cronjob
+  namespace: default
+spec:
+  schedule: "0 0 */2 * *"  # Adjust the cron schedule as needed
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: pdf-and-email
+              image: baoannguyen/grafana-dashboard-report
+              env:
+                - name: DASHBOARD_ID
+                  value: "<GRAFANA_DASHBOARD_ID>"
+                - name: API_KEY
+                  value: "<GRAFANA_API_KEY>"
+                - name: GRAFANA_HOST
+                  value: "<GRAFANA_HOST>"
+                - name: GRAFANA_PORT
+                  value: "<GRAFANA_PORT>"
+                - name: SMTP_SERVER
+                  value: "<SMTP_SERVER>"
+                - name: SMTP_PORT
+                  value: "<SMTP_PORT>"
+                - name: SMTP_USER
+                  value: "<SMTP_USER>"
+                - name: SMTP_PASS
+                  value: "<SMTP_PASS>"
+                - name: EMAIL_SUBJECT
+                  value: "Dashboard Report"
+                - name: EMAIL_TO
+                  value: "<RECIPIENT_EMAIL>"
+              command: ["/generate-and-report.sh"]
+          restartPolicy: OnFailure
