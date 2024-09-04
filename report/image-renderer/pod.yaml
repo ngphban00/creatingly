@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: grafana-image-renderer
+  namespace: default
+  labels:
+    app: grafana-image-renderer
+spec:
+  containers:
+  - image: grafana/grafana-image-renderer
+    imagePullPolicy: Always
+    name: grafana-image-renderer
