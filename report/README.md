@@ -47,7 +47,8 @@ To deploy the cronjob
 ```sh
 kubectl apply -f dashboard-report.yaml
 ```
-This cronjob is triggered in each 2 days. Once it gets triggered, the specified dashboard will be rendered from Grafana, then gets converted to pdf then send it as attachment in receiver's email
-See the sample __output.pdf__ in the same folder of above template.
+This cronjob is triggered in each 2 days. Once it gets triggered, the specified dashboard will be rendered from Grafana, gets converted to pdf then sent as attachment in receiver's email.
+
+See the sample __report.pdf__ in the same folder of above template.
 It is attached in receiver's email like below:
 ![Email attached](/images/email_attachment.png)
