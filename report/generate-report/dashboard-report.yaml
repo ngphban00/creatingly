@@ -14,8 +14,10 @@ spec:
             - name: pdf-and-email
               image: baoannguyen/grafana-dashboard-report
               env:
-                - name: DASHBOARD_ID
-                  value: "<GRAFANA_DASHBOARD_ID>"
+                - name: POD_DASHBOARD_ID
+                  value: "<GRAFANA_POD_DASHBOARD_ID>"
+                - name: PVC_DASHBOARD_ID
+                  value: "<GRAFANA_PVD_DASHBOARD_ID>"
                 - name: API_KEY
                   value: "<GRAFANA_API_KEY>"
                 - name: GRAFANA_HOST
