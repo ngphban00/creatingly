@@ -1,19 +1,13 @@
-# Allow access only from apps namespace
-# Deny other access
-
-apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
 metadata:
-  name: dbs-allow-apps-deny-all
+  name: web-allow-prod
   namespace: dbs
 spec:
-  podSelector: {}  # This applies to all pods in the dbs namespace
-  policyTypes:
-  - Ingress
+  podSelector:
+    matchLabels:
   ingress:
-  # Allow traffic from nmespace apps
   - from:
     - namespaceSelector:
         matchLabels:
-          kubernetes.io/metadata.name: apps
-
+         app: knote
